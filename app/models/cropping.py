@@ -42,10 +42,6 @@ def tool(image, coordinates):
 
     # Translate the image to centre
     out_translate = cv2.remap(out, ox, oy, cv2.INTER_LINEAR)
-
-    # Determine top left and bottom right of translated image
-    topleft = pts.min(axis=0) + [offsetx, offsety]
-    bottomright = pts.max(axis=0) + [offsetx, offsety]
     return out_translate
 
 
@@ -100,7 +96,6 @@ def distance(x1, y1, x2, y2):
 def rotation_image(image, coordinate):
     alpha = angle(coordinate)
     croped = tool(image, coordinate)
-
     img = rotate_img(croped, alpha)
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -109,7 +104,7 @@ def rotation_image(image, coordinate):
     cnt = contours[0]
     x, y, w, h = cv2.boundingRect(cnt)
 
-    crop = img[y:y + h, x:x + w]
+    crop = image[y:y + h, x:x + w]
     return crop
 
 
@@ -118,9 +113,4 @@ def run_to_crop(path_to_img, coordinate, path_to_res):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = rotation_image(image, coordinate)
     res = Image.fromarray(image, 'RGB')
-
-    my_path = os.path.dirname(path_to_res)
-    if not os.path.exists(my_path):
-        os.makedirs(my_path)
-
     res.save(path_to_res)

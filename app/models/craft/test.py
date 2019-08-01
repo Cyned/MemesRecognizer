@@ -9,7 +9,7 @@ import numpy as np
 from models.craft import imgproc
 from models.craft import craft_utils, file_utils
 from collections import OrderedDict
-from models.craft import CRAFT
+from models.craft.craft import CRAFT
 from config import GPU
 
 mag_ratio = 1.5
@@ -69,23 +69,23 @@ def test_net(net, image, text_threshold, link_threshold, low_text, poly):
     return boxes, polys, ret_score_text
 
 
-def run_craft(trained_model, path_to_img):
-    net = CRAFT()
-    if GPU:
-        net.load_state_dict(copyStateDict(torch.load(trained_model)))
-    else:
-        net.load_state_dict(copyStateDict(torch.load(trained_model, map_location='cpu')))
+class CraftModel(object):
+    def __init__(self, trained_model: str):
+        print(f'Loading {trained_model}...')
+        self.net = CRAFT()
+        if GPU:
+            self.net.load_state_dict(copyStateDict(torch.load(trained_model)))
+        else:
+            self.net.load_state_dict(copyStateDict(torch.load(trained_model, map_location='cpu')))
 
-    if GPU:
-        net = net.cuda()
-        net = torch.nn.DataParallel(net)
-        cudnn.benchmark = False
+        if GPU:
+            self.net = self.net.cuda()
+            self.net = torch.nn.DataParallel(self.net)
+            cudnn.benchmark = False
 
-    net.eval()
-    image = imgproc.loadImage(path_to_img)
-    bboxes, polys, score_text = test_net(net, image, text_threshold,
-                                         link_threshold, low_text, poly)
+        self.net.eval()
 
-    filename, file_ext = os.path.splitext(os.path.basename(path_to_img))
-    coord = file_utils.saveResult(path_to_img, image[:, :, ::-1], polys, dirname=result_folder)
-    return coord
+    def detect(self, path_to_img: str):
+        image = imgproc.loadImage(path_to_img)
+        bboxes, polys, score_text = test_net(self.net, image, text_threshold, link_threshold, low_text, poly)
+        return file_utils.saveResult(path_to_img, image[:, :, ::-1], polys, dirname=result_folder)
