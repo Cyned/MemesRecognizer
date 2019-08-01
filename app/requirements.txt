@@ -1,0 +1,6 @@
+textract==1.6.1
+imutils==0.5.2
+pytesseract==0.2.7
+opencv-python==4.1.0.25
+
+# Not completed

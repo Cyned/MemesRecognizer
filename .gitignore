@@ -1,0 +1,17 @@
+# Byte-compiled
+.idea/*
+__pycache__/
+
+# virtual environments
+.env
+.venv/
+venc/
+
+# IPython Notebook
+.ipynb_checkpoints
+
+# cython files
+*.c
+*.cpp
+*.so
+build/
