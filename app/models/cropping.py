@@ -1,48 +1,14 @@
 import cv2
-import numpy as np
 import math
-import os
 
+import numpy as np
 from PIL import Image
 
 
-def read_coord(file_coordinates):
-    with open(file_coordinates, 'r') as f:
-        data = f.readlines()
-    data = [coord.strip().split(',') for coord in data]
-    data = [[[line[n - 1], el] for n, el in enumerate(line) if n % 2 == 1] for line in data]
+def read_coord(data):
+    data = [coord.strip().split(',') for coord in data.split('\r\n')]
+    data = [[[int(line[n - 1]), int(el)] for n, el in enumerate(line) if n % 2 == 1] for line in data]
     return data
-
-
-def tool(image, coordinates):
-    pts = np.array(coordinates, dtype=np.int32)
-    mask = np.zeros((image.shape[0], image.shape[1]))
-
-    cv2.fillConvexPoly(mask, pts, 3)
-    mask = mask.astype(np.bool)
-
-    out = np.zeros_like(image)
-    out[mask] = image[mask]
-
-    img = image
-    # Find centroid of polygon
-    (meanx, meany) = pts.mean(axis=0)
-    (cenx, ceny) = (img.shape[1] / 2, img.shape[0] / 2)
-
-    # Make integer coordinates for each of the above
-    (meanx, meany, cenx, ceny) = np.floor([meanx, meany, cenx, ceny]).astype(np.int32)
-
-    # Calculate final offset to translate source pixels to centre of image
-    (offsetx, offsety) = (-meanx + cenx, -meany + ceny)
-
-    # Define remapping coordinates
-    (mx, my) = np.meshgrid(np.arange(img.shape[1]), np.arange(img.shape[0]))
-    ox = (mx - offsetx).astype(np.float32)
-    oy = (my - offsety).astype(np.float32)
-
-    # Translate the image to centre
-    out_translate = cv2.remap(out, ox, oy, cv2.INTER_LINEAR)
-    return out_translate
 
 
 def crop_rectangle(coord_list):
@@ -73,19 +39,11 @@ def angle(coor):
     return 90 - math.atan(b / a) * 180 / math.pi
 
 
-def read_coord(data):  # file_coordinates
-    data = [d.split(',') for d in data.split()]
-    return [[[int(line[n - 1]), int(el)] for n, el in enumerate(line) if n % 2 == 1] for line in data]
-
-
-def rotate_img(image, angle):
-    # calculate the center of he image
-    (h, w) = image.shape[:2]
-    center = (w / 2, h / 2)
-
-    M = cv2.getRotationMatrix2D(center, angle, 1.0)
-    rotated = cv2.warpAffine(image, M, (h, w))
-    return rotated
+def rotateImage(image, angle):
+    image_center = tuple(np.array(image.shape[1::-1]) / 2)
+    rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
+    result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
+    return result
 
 
 def distance(x1, y1, x2, y2):
@@ -95,16 +53,11 @@ def distance(x1, y1, x2, y2):
 
 def rotation_image(image, coordinate):
     alpha = angle(coordinate)
-    croped = tool(image, coordinate)
-    img = rotate_img(croped, alpha)
 
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray, 1, 255, cv2.THRESH_BINARY)
-    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnt = contours[0]
-    x, y, w, h = cv2.boundingRect(cnt)
+    (x1, y1, x2, y2) = crop_rectangle(coordinate)
+    crop = image[y1:y2, x1:x2]
+    # img = rotateImage(crop, alpha)
 
-    crop = image[y:y + h, x:x + w]
     return crop
 
 

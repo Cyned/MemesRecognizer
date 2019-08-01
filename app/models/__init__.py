@@ -9,7 +9,7 @@ from models.post_processor import PostProcessor
 from models.text_extractor import get_text
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from models.deepTextRecognitionBenchmark.demo import TextRecognition
-from  timeit_ import timeit_context
+from timeit_ import timeit_context
 
 from config import DATA_DIR, APP_DIR, GPU
 
@@ -76,7 +76,8 @@ def detect_text(path_to_img: str, postprocess: bool = False, verbose: bool = Fal
         print('Rotating and croping the image...')
     coordinates = read_coord(coord)
     for index in range(len(coordinates)):
-        run_to_crop(path_to_img, coordinates[index], os.path.join(DETECT_CACHE, f'crop{index+1}.jpg'))
+        if coordinates[index]:
+            run_to_crop(path_to_img, coordinates[index], os.path.join(DETECT_CACHE, f'crop{index+1}.jpg'))
     if not len(os.listdir(DETECT_CACHE)):
         if verbose:
             print('There is no text on the image.')
