@@ -84,7 +84,10 @@ class TextRecognition(object):
 
         # load model
         print(f'loading pretrained model from {self.saved_model}...')
-        self.model.load_state_dict(torch.load(self.saved_model, map_location='cpu'))
+        if self.gpu:
+            self.model.load_state_dict(torch.load(self.saved_model))
+        else:
+            self.model.load_state_dict(torch.load(self.saved_model, map_location='cpu'))
 
     def prepare_data(self, images: List[str]):
         """
