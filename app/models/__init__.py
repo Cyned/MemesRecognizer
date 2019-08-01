@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from models.detect.craft.test import run_craft
+from models.craft.test import run_craft
 from models.cropping import read_coord, run_to_crop
 
 from models.pre_processor import Preprocessor
