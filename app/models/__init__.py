@@ -7,6 +7,7 @@ from models.cropping import read_coord, run_to_crop
 from models.pre_processor import Preprocessor
 from models.post_processor import PostProcessor
 from models.text_extractor import get_text
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from models.deepTextRecognitionBenchmark.demo import TextRecognition
 from  timeit_ import timeit_context
 
@@ -40,6 +41,7 @@ text_recognizer = TextRecognition(
 
 craft_model = CraftModel(trained_model=WEIGHT_FILE)
 post_processor = PostProcessor()
+analyser = SentimentIntensityAnalyzer()
 
 
 __all__ = [
