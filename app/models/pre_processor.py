@@ -68,6 +68,52 @@ class Preprocessor(object):
         os.remove(self.CACHED_IMAGE)
 
 
+class Tesseract:
+    def __init__(self, oem: int = 3, psm: int = 3, lang: str = 'eng'):
+        self.oem: int = oem
+        self.psm: int = psm
+        self.lang: str = lang
+        self.lang_pool: Tuple[str, ...] = ('eng',)
+
+    @staticmethod
+    def unsharp(image: np.ndarray) -> np.ndarray:
+        gaussian_3 = cv2.GaussianBlur(image, (9, 9), 10.0)
+        return cv2.addWeighted(image, 1.4, gaussian_3, -0.5, 0, image)
+
+    @staticmethod
+    def median(image: np.ndarray) -> np.ndarray:
+        return cv2.medianBlur(image, ksize=3)
+
+    @staticmethod
+    def resize(image: np.ndarray) -> np.ndarray:
+        h, w, c = image.shape
+        if h < 30:
+            return cv2.resize(image, None, None, fx=2.5, fy=2.5, interpolation=cv2.INTER_CUBIC)
+        else:
+            return image
+
+    @staticmethod
+    def threshold(image: np.ndarray) -> np.ndarray:
+        median = int(np.mean(image))
+        ret, thresh = cv2.threshold(image, median, 255, cv2.THRESH_BINARY_INV)
+        return thresh
+
+    @staticmethod
+    def preprocess(image: np.ndarray) -> ImagePIL:
+        return ImagePIL.fromarray(
+                Tesseract.threshold(
+                    cv2.cvtColor(
+                        Tesseract.median(
+                            Tesseract.unsharp(
+                                Tesseract.resize(
+                                    image
+                                )
+                            )
+                        ),  cv2.COLOR_RGB2GRAY)
+                )
+        )
+
+
 if __name__ == '__main__':
     image_path = os.path.join(DATA_DIR, 'images/', '84u2i4.jpg')
     prep = Preprocessor(image=np.asarray(ImagePIL.open(image_path)))
@@ -78,3 +124,4 @@ if __name__ == '__main__':
     res = prep.to_segment().toarray()
     print(res)
 
+    # new_image = Tesseract.preprocess(np.asarray(Image.open(path__to_crop_image)))

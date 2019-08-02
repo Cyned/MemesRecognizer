@@ -81,7 +81,7 @@ def train_test_split(data: pd.DataFrame):
     :param data: data set
     :return: train and test partitions
     """
-    return tts(data, random_state=1341, shuffle=True, test_size=0.2)
+    return tts(data, random_state=1341, shuffle=True, test_size=0.1)
 
 
 def text_detection_tokenizer(text: str) -> List[str]:

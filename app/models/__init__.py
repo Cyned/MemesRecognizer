@@ -4,7 +4,7 @@ import shutil
 from models.craft.test import CraftModel
 from models.cropping import read_coord, run_to_crop
 
-from models.pre_processor import Preprocessor
+from models.pre_processor import Preprocessor, Tesseract
 from models.post_processor import PostProcessor
 from models.text_extractor import get_text
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
@@ -39,9 +39,10 @@ text_recognizer = TextRecognition(
     gpu               = GPU,
 )
 
-craft_model = CraftModel(trained_model=WEIGHT_FILE)
+craft_model    = CraftModel(trained_model=WEIGHT_FILE)
 post_processor = PostProcessor()
-analyser = SentimentIntensityAnalyzer()
+analyser       = SentimentIntensityAnalyzer()
+tesseract      = Tesseract()
 
 
 __all__ = [
@@ -51,6 +52,7 @@ __all__ = [
     'text_recognizer',
     'craft_model',
     'detect_text',
+    'tesseract',
 ]
 
 
@@ -100,5 +102,5 @@ if __name__ == '__main__':
     # )
     # print(res)
     with timeit_context('Text detect'):
-        res = detect_text(path_to_img=os.path.join(DATA_DIR, 'images/0SLMQpP.jpg'), postprocess=False, verbose=True)
+        res = detect_text(path_to_img=os.path.join(DATA_DIR, 'images/2uSFf1O.jpg    '), postprocess=False, verbose=True)
         print(res)

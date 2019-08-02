@@ -4,18 +4,22 @@ import math
 import numpy as np
 from PIL import Image
 
+from models import tesseract
 
-def read_coord(data):
-    data = [coord.strip().split(',') for coord in data.split('\r\n')]
+
+def read_coord(file_coordinates):
+    with open(file_coordinates, 'r') as f:
+        data = f.readlines()
+    data = [coord.strip().split(',') for coord in data]
     data = [[[int(line[n - 1]), int(el)] for n, el in enumerate(line) if n % 2 == 1] for line in data]
     return data
 
 
 def crop_rectangle(coord_list):
-    x1 = min([i[0] for i in coord_list])
+    x1 = max(min([i[0] for i in coord_list]), 0)
     x2 = max([j[0] for j in coord_list])
 
-    y1 = min([j[1] for j in coord_list])
+    y1 = max(min([j[1] for j in coord_list]), 0)
     y2 = max([j[1] for j in coord_list])
     return x1, y1, x2, y2
 
@@ -43,6 +47,7 @@ def rotateImage(image, angle):
     image_center = tuple(np.array(image.shape[1::-1]) / 2)
     rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
     result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
+
     return result
 
 
@@ -51,19 +56,24 @@ def distance(x1, y1, x2, y2):
     return math.sqrt(d)
 
 
-def rotation_image(image, coordinate):
+def rotation_image(filepath, coordinate):
+    image_original = cv2.imread(filepath)
     alpha = angle(coordinate)
 
     (x1, y1, x2, y2) = crop_rectangle(coordinate)
-    crop = image[y1:y2, x1:x2]
-    # img = rotateImage(crop, alpha)
-
-    return crop
+    crop = image_original[y1:y2, x1:x2]
+    try:
+        img = rotateImage(crop, alpha)
+    except Exception:
+        return crop
+    else:
+        return img
 
 
 def run_to_crop(path_to_img, coordinate, path_to_res):
     image = cv2.imread(path_to_img)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = rotation_image(image, coordinate)
+    image = tesseract.preprocess(image)
     res = Image.fromarray(image, 'RGB')
     res.save(path_to_res)
