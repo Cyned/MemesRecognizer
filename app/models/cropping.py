@@ -4,13 +4,14 @@ import math
 import numpy as np
 from PIL import Image
 
-from models import tesseract
+from models.pre_processor import Tesseract
 
 
-def read_coord(file_coordinates):
-    with open(file_coordinates, 'r') as f:
-        data = f.readlines()
-    data = [coord.strip().split(',') for coord in data]
+tesseract = Tesseract()
+
+
+def read_coord(data):
+    data = [coord.strip().split(',') for coord in data.split('\r\n')]
     data = [[[int(line[n - 1]), int(el)] for n, el in enumerate(line) if n % 2 == 1] for line in data]
     return data
 
@@ -56,12 +57,12 @@ def distance(x1, y1, x2, y2):
     return math.sqrt(d)
 
 
-def rotation_image(filepath, coordinate):
-    image_original = cv2.imread(filepath)
+def rotation_image(image, coordinate):
+    # image_original = cv2.imread(filepath)
     alpha = angle(coordinate)
 
     (x1, y1, x2, y2) = crop_rectangle(coordinate)
-    crop = image_original[y1:y2, x1:x2]
+    crop = image[y1:y2, x1:x2]
     try:
         img = rotateImage(crop, alpha)
     except Exception:

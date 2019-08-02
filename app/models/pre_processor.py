@@ -100,8 +100,7 @@ class Tesseract:
 
     @staticmethod
     def preprocess(image: np.ndarray) -> ImagePIL:
-        return ImagePIL.fromarray(
-                Tesseract.threshold(
+        return Tesseract.threshold(
                     cv2.cvtColor(
                         Tesseract.median(
                             Tesseract.unsharp(
@@ -111,7 +110,6 @@ class Tesseract:
                             )
                         ),  cv2.COLOR_RGB2GRAY)
                 )
-        )
 
 
 if __name__ == '__main__':
