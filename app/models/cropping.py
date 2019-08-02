@@ -76,5 +76,5 @@ def run_to_crop(path_to_img, coordinate, path_to_res):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = rotation_image(image, coordinate)
     image = tesseract.preprocess(image)
-    res = Image.fromarray(image, 'RGB')
+    res = Image.fromarray(image)
     res.save(path_to_res)
